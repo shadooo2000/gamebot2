@@ -1,192 +1,303 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Game Bot</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoGaming Bot Interface</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --text: #f1f5f9;
+        }
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #121212;
-    color: white;
-}
+        /* Навигация */
+        nav {
+            width: 100%;
+            background: var(--card-bg);
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
 
-header {
-    text-align: center;
-    padding: 10px;
-    background: #1f1f1f;
-}
+        button {
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
 
-nav {
-    display: flex;
-    justify-content: space-around;
-    background: #1c1c1c;
-    padding: 10px;
-}
+        button:hover { background: var(--accent); }
+        button.active { background: var(--accent); }
 
-nav button {
-    background: none;
-    color: white;
-    border: none;
-    font-size: 14px;
-}
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+        }
 
-section {
-    display: none;
-    padding: 15px;
-}
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
 
-section.active {
-    display: block;
-}
+        /* Баланс */
+        .balance-display {
+            font-size: 1.5rem;
+            color: var(--success);
+            margin-bottom: 20px;
+        }
 
-.card {
-    background: #222;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-}
+        /* Скрытые секции */
+        .game-section { display: none; }
+        .game-section.active { display: block; }
 
-button.game-btn {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    background: #4caf50;
-    border: none;
-    color: white;
-    border-radius: 8px;
-}
-</style>
+        /* Игры: Дизайн */
+        .slot-machine {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 3rem;
+            margin: 20px 0;
+        }
+
+        .crash-multiplier {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 20px 0;
+        }
+
+        input[type="number"], input[type="text"] {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: #334155;
+            padding: 10px;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
 
-<header>
-<h2>🎮 Mini Game Bot</h2>
-<p>Баланс: <span id="balance">1000</span> 💰</p>
-</header>
-
 <nav>
-<button onclick="showTab('games')">Игры</button>
-<button onclick="showTab('profile')">Профиль</button>
-<button onclick="showTab('refs')">Рефералы</button>
+    <button onclick="showSection('dice')">Dice</button>
+    <button onclick="showSection('slots')">Slots</button>
+    <button onclick="showSection('crash')">Crash</button>
+    <button onclick="showSection('profile')">Профиль</button>
 </nav>
 
-<!-- GAMES -->
-<section id="games" class="active">
+<div class="container">
+    <div class="card">
+        <div class="balance-display">Баланс: <span id="user-balance">1000</span>💰</div>
+    </div>
 
-<div class="card">
-<h3>🎲 Кости</h3>
-<button class="game-btn" onclick="playDice()">Бросить</button>
-<p id="diceResult"></p>
+    <section id="dice" class="game-section active">
+        <div class="card">
+            <h2>Игра Кости (Dice)</h2>
+            <p>Шанс выигрыша: 50%</p>
+            <input type="number" id="dice-bet" placeholder="Ставка" value="10">
+            <button onclick="playDice()" style="width: 100%; margin-top: 10px; background: var(--success);">Бросить кубик</button>
+            <p id="dice-result"></p>
+        </div>
+    </section>
+
+    <section id="slots" class="game-section">
+        <div class="card">
+            <h2>Слоты</h2>
+            <div class="slot-machine" id="slot-reels">🎰 | 🎰 | 🎰</div>
+            <input type="number" id="slots-bet" placeholder="Ставка" value="10">
+            <button onclick="playSlots()" style="width: 100%; margin-top: 10px; background: var(--success);">Крутить</button>
+            <p id="slots-result"></p>
+        </div>
+    </section>
+
+    <section id="crash" class="game-section">
+        <div class="card">
+            <h2>Crash</h2>
+            <div class="crash-multiplier" id="crash-display">1.00x</div>
+            <input type="number" id="crash-bet" placeholder="Ставка" value="10">
+            <button id="crash-btn" onclick="startCrash()" style="width: 100%; background: var(--success);">Старт</button>
+            <p id="crash-status"></p>
+        </div>
+    </section>
+
+    <section id="profile" class="game-section">
+        <div class="card">
+            <h2>Мой Профиль</h2>
+            <div class="stat-grid">
+                <div class="stat-item">Игр: <span id="stat-total">0</span></div>
+                <div class="stat-item">Побед: <span id="stat-wins">0</span></div>
+            </div>
+            <div style="margin-top: 20px; text-align: left;">
+                <label>Реферальная ссылка:</label>
+                <input type="text" id="ref-link" readonly value="https://gamebot.io/ref/user777">
+                <button onclick="copyRef()" style="padding: 5px 10px; font-size: 0.8rem;">Копировать</button>
+            </div>
+        </div>
+    </section>
 </div>
-
-<div class="card">
-<h3>🎰 Слоты</h3>
-<button class="game-btn" onclick="playSlots()">Крутить</button>
-<p id="slotsResult"></p>
-</div>
-
-<div class="card">
-<h3>📈 Краш</h3>
-<button class="game-btn" onclick="playCrash()">Играть</button>
-<p id="crashResult"></p>
-</div>
-
-</section>
-
-<!-- PROFILE -->
-<section id="profile">
-
-<div class="card">
-<p>👤 ID: <span id="userId">Загрузка...</span></p>
-<p>💰 Баланс: <span id="profileBalance"></span></p>
-</div>
-
-</section>
-
-<!-- REFERRALS -->
-<section id="refs">
-
-<div class="card">
-<p>🔗 Ваша ссылка:</p>
-<input id="refLink" style="width:100%" readonly>
-</div>
-
-<div class="card">
-<p>👥 Приглашено: <span id="refCount">0</span></p>
-</div>
-
-</section>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.expand();
+    // Инициализация данных
+    let userData = JSON.parse(localStorage.getItem('gameUserData')) || {
+        balance: 1000,
+        wins: 0,
+        totalGames: 0
+    };
 
-let balance = 1000;
+    function updateUI() {
+        document.getElementById('user-balance').innerText = userData.balance.toFixed(2);
+        document.getElementById('stat-total').innerText = userData.totalGames;
+        document.getElementById('stat-wins').innerText = userData.wins;
+        localStorage.setItem('gameUserData', JSON.stringify(userData));
+    }
 
-// ---------- UI ----------
+    function showSection(id) {
+        document.querySelectorAll('.game-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
 
-function showTab(tab) {
-    document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
-    document.getElementById(tab).classList.add("active");
-}
+    // ЛОГИКА DICE
+    function playDice() {
+        let bet = parseFloat(document.getElementById('dice-bet').value);
+        if (bet > userData.balance || bet <= 0) return alert("Недостаточно средств!");
 
-// ---------- BALANCE ----------
+        userData.totalGames++;
+        let roll = Math.random() * 100;
+        if (roll > 50) {
+            userData.balance += bet;
+            userData.wins++;
+            document.getElementById('dice-result').innerHTML = `<span style="color:var(--success)">Победа! Выпало ${roll.toFixed(2)}</span>`;
+        } else {
+            userData.balance -= bet;
+            document.getElementById('dice-result').innerHTML = `<span style="color:var(--danger)">Проигрыш. Выпало ${roll.toFixed(2)}</span>`;
+        }
+        updateUI();
+    }
 
-function updateBalance(amount) {
-    balance += amount;
-    document.getElementById("balance").innerText = balance;
-    document.getElementById("profileBalance").innerText = balance;
-}
+    // ЛОГИКА SLOTS
+    const icons = ['🍒', '🍋', '🔔', '💎', '7️⃣'];
+    function playSlots() {
+        let bet = parseFloat(document.getElementById('slots-bet').value);
+        if (bet > userData.balance || bet <= 0) return alert("Недостаточно средств!");
 
-// ---------- DICE ----------
+        userData.totalGames++;
+        let r1 = icons[Math.floor(Math.random() * icons.length)];
+        let r2 = icons[Math.floor(Math.random() * icons.length)];
+        let r3 = icons[Math.floor(Math.random() * icons.length)];
 
-function playDice() {
-    let roll = Math.floor(Math.random() * 6) + 1;
-    document.getElementById("diceResult").innerText = "Выпало: " + roll;
+        document.getElementById('slot-reels').innerText = `${r1} | ${r2} | ${r3}`;
 
-    if (roll >= 4) updateBalance(50);
-    else updateBalance(-50);
-}
+        if (r1 === r2 && r2 === r3) {
+            let win = bet * 10;
+            userData.balance += win;
+            userData.wins++;
+            document.getElementById('slots-result').innerHTML = `<span style="color:var(--success)">ДЖЕКПОТ! +${win}</span>`;
+        } else {
+            userData.balance -= bet;
+            document.getElementById('slots-result').innerHTML = "Попробуй еще раз";
+        }
+        updateUI();
+    }
 
-// ---------- SLOTS ----------
+    // ЛОГИКА CRASH
+    let crashInterval;
+    let currentMultiplier = 1.0;
+    let isCrashRunning = false;
 
-function playSlots() {
-    let a = Math.floor(Math.random()*3);
-    let b = Math.floor(Math.random()*3);
-    let c = Math.floor(Math.random()*3);
+    function startCrash() {
+        let bet = parseFloat(document.getElementById('crash-bet').value);
+        if (bet > userData.balance || bet <= 0) return alert("Недостаточно средств!");
 
-    document.getElementById("slotsResult").innerText = `${a} | ${b} | ${c}`;
+        if (!isCrashRunning) {
+            // Запуск
+            isCrashRunning = true;
+            userData.totalGames++;
+            currentMultiplier = 1.0;
+            let crashPoint = Math.random() * 5 + 1; // Случайный краш от 1 до 6
+            
+            document.getElementById('crash-btn').innerText = "ЗАБРАТЬ";
+            document.getElementById('crash-btn').style.background = "var(--danger)";
+            document.getElementById('crash-status').innerText = "Самолет летит...";
 
-    if (a === b && b === c) updateBalance(200);
-    else updateBalance(-50);
-}
+            crashInterval = setInterval(() => {
+                currentMultiplier += 0.05;
+                document.getElementById('crash-display').innerText = currentMultiplier.toFixed(2) + "x";
 
-// ---------- CRASH ----------
+                if (currentMultiplier >= crashPoint) {
+                    clearInterval(crashInterval);
+                    userData.balance -= bet;
+                    isCrashRunning = false;
+                    document.getElementById('crash-display').innerText = "CRASHED!";
+                    document.getElementById('crash-btn').innerText = "СТАРТ";
+                    document.getElementById('crash-btn').style.background = "var(--success)";
+                    updateUI();
+                }
+            }, 100);
+        } else {
+            // Забрать деньги
+            clearInterval(crashInterval);
+            let win = bet * currentMultiplier;
+            userData.balance += (win - bet);
+            userData.wins++;
+            isCrashRunning = false;
+            document.getElementById('crash-status').innerText = `Вы забрали ${win.toFixed(2)}!`;
+            document.getElementById('crash-btn').innerText = "СТАРТ";
+            document.getElementById('crash-btn').style.background = "var(--success)";
+            updateUI();
+        }
+    }
 
-function playCrash() {
-    let multiplier = (Math.random() * 5).toFixed(2);
-    document.getElementById("crashResult").innerText = "x" + multiplier;
+    function copyRef() {
+        let copyText = document.getElementById("ref-link");
+        copyText.select();
+        document.execCommand("copy");
+        alert("Ссылка скопирована!");
+    }
 
-    if (multiplier > 2) updateBalance(150);
-    else updateBalance(-100);
-}
-
-// ---------- TELEGRAM DATA ----------
-
-if (tg.initDataUnsafe.user) {
-    document.getElementById("userId").innerText = tg.initDataUnsafe.user.id;
-}
-
-document.getElementById("profileBalance").innerText = balance;
-
-// fake ref link
-document.getElementById("refLink").value = "https://t.me/YourBot?start=ref123";
-
+    updateUI();
 </script>
 
 </body>

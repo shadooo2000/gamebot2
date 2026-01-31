@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Game Bot</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: white;
+}
+
+header {
+    text-align: center;
+    padding: 10px;
+    background: #1f1f1f;
+}
+
+nav {
+    display: flex;
+    justify-content: space-around;
+    background: #1c1c1c;
+    padding: 10px;
+}
+
+nav button {
+    background: none;
+    color: white;
+    border: none;
+    font-size: 14px;
+}
+
+section {
+    display: none;
+    padding: 15px;
+}
+
+section.active {
+    display: block;
+}
+
+.card {
+    background: #222;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+button.game-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: #4caf50;
+    border: none;
+    color: white;
+    border-radius: 8px;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h2>🎮 Mini Game Bot</h2>
+<p>Баланс: <span id="balance">1000</span> 💰</p>
+</header>
+
+<nav>
+<button onclick="showTab('games')">Игры</button>
+<button onclick="showTab('profile')">Профиль</button>
+<button onclick="showTab('refs')">Рефералы</button>
+</nav>
+
+<!-- GAMES -->
+<section id="games" class="active">
+
+<div class="card">
+<h3>🎲 Кости</h3>
+<button class="game-btn" onclick="playDice()">Бросить</button>
+<p id="diceResult"></p>
+</div>
+
+<div class="card">
+<h3>🎰 Слоты</h3>
+<button class="game-btn" onclick="playSlots()">Крутить</button>
+<p id="slotsResult"></p>
+</div>
+
+<div class="card">
+<h3>📈 Краш</h3>
+<button class="game-btn" onclick="playCrash()">Играть</button>
+<p id="crashResult"></p>
+</div>
+
+</section>
+
+<!-- PROFILE -->
+<section id="profile">
+
+<div class="card">
+<p>👤 ID: <span id="userId">Загрузка...</span></p>
+<p>💰 Баланс: <span id="profileBalance"></span></p>
+</div>
+
+</section>
+
+<!-- REFERRALS -->
+<section id="refs">
+
+<div class="card">
+<p>🔗 Ваша ссылка:</p>
+<input id="refLink" style="width:100%" readonly>
+</div>
+
+<div class="card">
+<p>👥 Приглашено: <span id="refCount">0</span></p>
+</div>
+
+</section>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+let balance = 1000;
+
+// ---------- UI ----------
+
+function showTab(tab) {
+    document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+    document.getElementById(tab).classList.add("active");
+}
+
+// ---------- BALANCE ----------
+
+function updateBalance(amount) {
+    balance += amount;
+    document.getElementById("balance").innerText = balance;
+    document.getElementById("profileBalance").innerText = balance;
+}
+
+// ---------- DICE ----------
+
+function playDice() {
+    let roll = Math.floor(Math.random() * 6) + 1;
+    document.getElementById("diceResult").innerText = "Выпало: " + roll;
+
+    if (roll >= 4) updateBalance(50);
+    else updateBalance(-50);
+}
+
+// ---------- SLOTS ----------
+
+function playSlots() {
+    let a = Math.floor(Math.random()*3);
+    let b = Math.floor(Math.random()*3);
+    let c = Math.floor(Math.random()*3);
+
+    document.getElementById("slotsResult").innerText = `${a} | ${b} | ${c}`;
+
+    if (a === b && b === c) updateBalance(200);
+    else updateBalance(-50);
+}
+
+// ---------- CRASH ----------
+
+function playCrash() {
+    let multiplier = (Math.random() * 5).toFixed(2);
+    document.getElementById("crashResult").innerText = "x" + multiplier;
+
+    if (multiplier > 2) updateBalance(150);
+    else updateBalance(-100);
+}
+
+// ---------- TELEGRAM DATA ----------
+
+if (tg.initDataUnsafe.user) {
+    document.getElementById("userId").innerText = tg.initDataUnsafe.user.id;
+}
+
+document.getElementById("profileBalance").innerText = balance;
+
+// fake ref link
+document.getElementById("refLink").value = "https://t.me/YourBot?start=ref123";
+
+</script>
+
+</body>
+</html>
